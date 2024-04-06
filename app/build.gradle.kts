@@ -20,6 +20,12 @@ repositories {
 }
 
 dependencies {
+    // Kafka Stream
+    implementation("org.apache.kafka:kafka-streams:3.7.0")
+
+    //Spring boot
+    implementation("org.springframework.boot:spring-boot-starter-web:3.2.4")
+
     // Use the Kotlin JUnit 5 integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 
