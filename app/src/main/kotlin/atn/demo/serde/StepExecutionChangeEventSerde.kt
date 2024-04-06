@@ -1,0 +1,28 @@
+package atn.demo.serde
+
+import atn.demo.event.incoming.StepExecutionChangeEvent
+import atn.demo.util.objectMapper
+import org.apache.kafka.common.serialization.Deserializer
+import org.apache.kafka.common.serialization.Serde
+import org.apache.kafka.common.serialization.Serializer
+import org.springframework.stereotype.Component
+
+@Component
+class StepExecutionChangeEventSerde : Serde<StepExecutionChangeEvent> {
+
+    override fun serializer(): Serializer<StepExecutionChangeEvent> = StepExecutionEventSerializer()
+
+    override fun deserializer(): Deserializer<StepExecutionChangeEvent> = StepExecutionChangeEventDeserializer()
+}
+
+class StepExecutionEventSerializer : Serializer<StepExecutionChangeEvent> {
+    override fun serialize(topic: String?, data: StepExecutionChangeEvent?): ByteArray {
+        return objectMapper.writeValueAsBytes(data)
+    }
+}
+
+class StepExecutionChangeEventDeserializer : Deserializer<StepExecutionChangeEvent> {
+    override fun deserialize(topic: String?, data: ByteArray?): StepExecutionChangeEvent {
+        return objectMapper.readValue(data, StepExecutionChangeEvent::class.java)
+    }
+}

@@ -6,12 +6,20 @@
  * User Manual available at https://docs.gradle.org/7.6.2/userguide/building_java_projects.html
  */
 
+
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     id("org.jetbrains.kotlin.jvm") version "1.7.10"
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+}
+
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 }
 
 repositories {
@@ -34,11 +42,18 @@ dependencies {
 
     // This dependency is used by the application.
     implementation("com.google.guava:guava:31.1-jre")
+
+    // Jackson
+    // Jackson
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.5")
 }
 
 application {
     // Define the main class for the application.
     mainClass.set("atn.demo.AppKt")
+    applicationDefaultJvmArgs = listOf("-Djava.rmi.server.hostname=127.0.0.1")
 }
 
 tasks.named<Test>("test") {

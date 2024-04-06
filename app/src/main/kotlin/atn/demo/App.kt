@@ -3,13 +3,12 @@
  */
 package atn.demo
 
-class App {
-    val greeting: String
-        get() {
-            return "Hello World!"
-        }
-}
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
 
-fun main() {
-    println(App().greeting)
+@SpringBootApplication
+open class App
+
+fun main(args: Array<String>) {
+    runApplication<App>(*args)
 }
