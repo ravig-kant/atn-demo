@@ -6,6 +6,7 @@ import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
 import org.springframework.stereotype.Component
+import java.nio.charset.Charset
 
 @Component
 class StepExecutionSerde : Serde<StepExecution> {
@@ -15,7 +16,7 @@ class StepExecutionSerde : Serde<StepExecution> {
 
 class StepExecutionSerializer : Serializer<StepExecution> {
     override fun serialize(topic: String?, data: StepExecution?): ByteArray {
-        return objectMapper.writeValueAsBytes(data)
+        return objectMapper.writeValueAsString(data).toByteArray(Charsets.US_ASCII)
     }
 }
 

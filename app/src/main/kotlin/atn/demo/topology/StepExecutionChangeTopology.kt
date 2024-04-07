@@ -1,5 +1,6 @@
 package atn.demo.topology
 
+import atn.demo.aggregate.StepExecution
 import atn.demo.aggregator.StepExecutionAggregator
 import atn.demo.event.EventsAggregateTuple
 import atn.demo.event.incoming.StepExecutionChangeEvent
@@ -7,6 +8,7 @@ import atn.demo.serde.EventsAggregateTupleSerde
 import atn.demo.serde.StepExecutionChangeEventSerde
 import atn.demo.serde.ValueUnwrapperEventHolderSerde
 import org.apache.kafka.common.serialization.Serde
+import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.utils.Bytes
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.StreamsBuilder
@@ -25,8 +27,7 @@ class StepExecutionChangeTopology(
     private val stringSerde: Serde<String>,
     private val stepExecutionChangeEventSerde: StepExecutionChangeEventSerde,
     private val stepExecutionAggregator: StepExecutionAggregator,
-    private val byteSerde: Serde<ByteArray>,
-    private val eventsAggregateTupleSerde: EventsAggregateTupleSerde,
+    private val eventsAggregateTupleSerde: EventsAggregateTupleSerde<StepExecution>,
     private val valueUnwrapperEventHolderSerde: ValueUnwrapperEventHolderSerde
 ) {
 
@@ -41,8 +42,8 @@ class StepExecutionChangeTopology(
         process()
     }
 
-    private fun stepExecutionStateStore(): Materialized<String, EventsAggregateTuple, KeyValueStore<Bytes, ByteArray>> {
-        return Materialized.`as`<String, EventsAggregateTuple>(Stores.inMemoryKeyValueStore("step-execution-state-store"))
+    private fun stepExecutionStateStore(): Materialized<String, EventsAggregateTuple<StepExecution>, KeyValueStore<Bytes, ByteArray>> {
+        return Materialized.`as`<String, EventsAggregateTuple<StepExecution>>(Stores.inMemoryKeyValueStore("step-execution-state-store"))
             .withKeySerde(stringSerde)
             .withValueSerde(eventsAggregateTupleSerde)
             .withCachingDisabled()
@@ -62,7 +63,7 @@ class StepExecutionChangeTopology(
             .flatMapValues { _, eventsAggregateTuple -> eventsAggregateTuple.events }
             .map { _, eventHolder -> KeyValue(eventHolder.key, eventHolder) }
             .peek { _, eventHolder -> logger.info("Publishing event into topic: ${eventHolder.topic}") }
-            .to({ _, eventHolder, _ -> eventHolder.topic}, Produced.with(byteSerde, valueUnwrapperEventHolderSerde))
+            .to({ _, eventHolder, _ -> eventHolder.topic}, Produced.with(Serdes.String(), valueUnwrapperEventHolderSerde))
     }
 
 }

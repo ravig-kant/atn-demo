@@ -4,8 +4,10 @@ import atn.demo.event.outgoing.CommandExecutionEvent
 import atn.demo.util.objectMapper
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
+import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.serialization.Serializer
 import org.springframework.stereotype.Component
+import java.nio.charset.Charset
 
 @Component
 class DispatchCommandEventSerde : Serde<CommandExecutionEvent> {

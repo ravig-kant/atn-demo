@@ -6,22 +6,23 @@ import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
 import org.springframework.stereotype.Component
+import java.nio.charset.Charset
 
 @Component
-class EventsAggregateTupleSerde : Serde<EventsAggregateTuple> {
+class EventsAggregateTupleSerde<out T> : Serde<EventsAggregateTuple<@UnsafeVariance T>> {
 
-    override fun serializer(): Serializer<EventsAggregateTuple> = EventsAggregateTupleSerializer()
-    override fun deserializer(): Deserializer<EventsAggregateTuple> = EventsAggregateTupleDeserializer()
+    override fun serializer(): Serializer<EventsAggregateTuple<@UnsafeVariance T>> = EventsAggregateTupleSerializer()
+    override fun deserializer(): Deserializer<EventsAggregateTuple<@UnsafeVariance T>> = EventsAggregateTupleDeserializer()
 }
 
-class EventsAggregateTupleSerializer : Serializer<EventsAggregateTuple> {
-    override fun serialize(topic: String?, data: EventsAggregateTuple?): ByteArray {
-        return objectMapper.writeValueAsBytes(data)
+class EventsAggregateTupleSerializer<out T> : Serializer<EventsAggregateTuple<@UnsafeVariance T>> {
+    override fun serialize(topic: String?, data: EventsAggregateTuple<@UnsafeVariance T>?): ByteArray {
+        return objectMapper.writeValueAsString(data).toByteArray(Charsets.US_ASCII)
     }
 }
 
-class EventsAggregateTupleDeserializer : Deserializer<EventsAggregateTuple> {
-    override fun deserialize(topic: String?, data: ByteArray?): EventsAggregateTuple {
-        return objectMapper.readValue(data, EventsAggregateTuple::class.java)
+class EventsAggregateTupleDeserializer<out T> : Deserializer<EventsAggregateTuple<@UnsafeVariance T>> {
+    override fun deserialize(topic: String?, data: ByteArray?): EventsAggregateTuple<T> {
+        return objectMapper.readValue(data, EventsAggregateTuple::class.java) as EventsAggregateTuple<T>
     }
 }

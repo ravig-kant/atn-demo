@@ -7,6 +7,7 @@ import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
 import org.springframework.stereotype.Component
+import java.nio.charset.Charset
 
 @Component
 class ValueUnwrapperEventHolderSerde : Serde<EventHolder> {

@@ -1,3 +1,3 @@
 package atn.demo.event
 
-class EventsAggregateTuple(val events: List<EventHolder>?, val aggregate: ByteArray?)
+class EventsAggregateTuple<out T>(val events: List<EventHolder>?, val aggregate: T?)

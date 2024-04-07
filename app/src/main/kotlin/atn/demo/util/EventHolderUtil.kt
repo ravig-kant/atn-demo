@@ -17,9 +17,7 @@ object EventHolderUtil {
             ?: throw RuntimeException("Could not find entry in domain registry for ${domainEvent.eventName()}")
 
         return runCatching {
-            val keyBytes = domainEventRegistryEntry.keySerdeReference.serde.serializer().serialize(domainEventRegistryEntry.eventTopic, domainEvent.key())
-            val valueBytes = domainEventRegistryEntry.valueSerdeReference.serde.serializer().serialize(domainEventRegistryEntry.eventTopic, domainEvent)
-            EventHolder(domainEvent.eventName(), domainEventRegistryEntry.eventTopic, keyBytes, valueBytes)
+            EventHolder(domainEvent.eventName(), domainEventRegistryEntry.eventTopic, domainEvent.key() as String, domainEvent)
         }.fold(
             onSuccess = { it },
             onFailure = {

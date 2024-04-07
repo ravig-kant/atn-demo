@@ -13,33 +13,32 @@ import org.springframework.stereotype.Component
 
 @Component
 class StepExecutionAggregator(
-    private val stepExecutionSerde: StepExecutionSerde,
     private val stepExecutionDomainEventRegistry: StepExecutionDomainEventRegistry
-) : Aggregator<String, StepExecutionChangeEvent, EventsAggregateTuple> {
+) : Aggregator<String, StepExecutionChangeEvent, EventsAggregateTuple<StepExecution>> {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    override fun apply(key: String, value: StepExecutionChangeEvent, tuple: EventsAggregateTuple): EventsAggregateTuple? {
+    override fun apply(
+        key: String,
+        value: StepExecutionChangeEvent,
+        tuple: EventsAggregateTuple<StepExecution>
+    ): EventsAggregateTuple<StepExecution> {
         logger.info("Applying aggregate, key: $key, value: $value")
-        val stepExecution : StepExecution? = tuple.aggregate
-            ?.let { runCatching { stepExecutionSerde.deserializer().deserialize("", it) } }
-            ?.fold(
-                onSuccess = { it },
-                onFailure = {
-                    val errorMessage = "Failed to deserialize aggregate"
-                    logger.error(errorMessage)
-                    throw RuntimeException(errorMessage)
+        val stepExecution: StepExecution =
+            tuple.aggregate
+                ?: if (value is StepExecutionStartEvent) {
+                    StepExecution(value)
+                } else {
+                    throw IllegalStateException("Aggregate can't be null")
                 }
-            ) ?: if(value is StepExecutionStartEvent) {
-                StepExecution(value)
-            } else {
-                logger.warn("Unexpected event: $value")
-                null
-            }
 
-        return stepExecution?.let {
-            val outboundEvents = it.process(value).map { event -> EventHolderUtil.toEventHolder(event, stepExecutionDomainEventRegistry) }
-            EventsAggregateTuple(outboundEvents, stepExecutionSerde.serializer().serialize("", it))
+        return stepExecution.let { execution ->
+            val outboundEvents =
+                execution.process(value).map { EventHolderUtil.toEventHolder(it, stepExecutionDomainEventRegistry) }
+            EventsAggregateTuple(
+                outboundEvents,
+                execution
+            )
         }
     }
 }
